@@ -145,6 +145,7 @@ def analizuj_csv():
 
             mean_angle = df_csv['Angle'].mean()
             max_angle = df_csv['Angle'].max()
+            deviation_angle = df_csv['Angle'].std()
             var_angle = df_csv['Angle'].var()
 
             wyniki.append({
@@ -155,6 +156,7 @@ def analizuj_csv():
                 'Substepping': sub,
                 'Min Z': min_z,
                 'Max Z': max_z,
+                'Odchylenie Katu': deviation_angle,
                 'Wariancja Z': var_z,
                 'NavMesh [%]': navmesh_pct,
                 'Sredni Kat': mean_angle,

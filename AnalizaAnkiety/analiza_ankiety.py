@@ -156,7 +156,7 @@ def analizuj_ankiete(sciezka_excel):
     wybory_3 = demo.copy()
     wybory_3['Wybór Modelu'] = df.iloc[:, 33]
 
-    wszystkie_glosy = pd.concat([wybory_1, wybory_2, wybory_3]).dropna(subset=['Wybór Modelu'])
+    wszystkie_glosy = pd.concat([wybory_1, wybory_2, wybory_3]).dropna(subset=['Wybór Modelu']).reset_index(drop=True)
 
     fig, axes = plt.subplots(3, 1, figsize=(12, 18))
     kolejnosc_modeli = ['Model A', 'Model B', 'Model C']
@@ -166,28 +166,39 @@ def analizuj_ankiete(sciezka_excel):
     obecne_doswiadczenia = [d for d in kolejnosc_doswiadczenie if d in wszystkie_glosy['Doświadczenie'].unique()]
 
     # 4.1 Wybór a Płeć
-    sns.countplot(data=wszystkie_glosy, x='Wybór Modelu', hue='Płeć', ax=axes[0], palette='Pastel1',
-                  order=kolejnosc_modeli)
+    cross_plec = pd.crosstab(wszystkie_glosy['Wybór Modelu'], wszystkie_glosy['Płeć'], normalize='columns') * 100
+    cross_plec = cross_plec.reindex(index=kolejnosc_modeli).fillna(0)
+    cross_plec.plot(kind='bar', ax=axes[0], color=sns.color_palette('Pastel1'), width=0.8)
     axes[0].set_title('Preferencje wyboru modelu z podziałem na płeć', fontweight='bold', fontsize=16)
-    axes[0].set_ylabel('Liczba oddanych głosów')
+    axes[0].set_ylabel('Procent głosów w podgrupie [%]')
     axes[0].set_xlabel('')
     axes[0].legend(title='Płeć', loc='upper left')
+    axes[0].tick_params(axis='x', rotation=0)
+    axes[0].set_ylim(0, 100)
 
     # 4.2 Wybór a Wiek
-    sns.countplot(data=wszystkie_glosy, x='Wybór Modelu', hue='Wiek', ax=axes[1], palette='Set2',
-                  order=kolejnosc_modeli, hue_order=obecne_wieki)
+    cross_wiek = pd.crosstab(wszystkie_glosy['Wybór Modelu'], wszystkie_glosy['Wiek'], normalize='columns') * 100
+    cross_wiek = cross_wiek.reindex(index=kolejnosc_modeli, columns=obecne_wieki).fillna(0)
+    cross_wiek.plot(kind='bar', ax=axes[1], color=sns.color_palette('Set2'), width=0.8)
     axes[1].set_title('Preferencje wyboru modelu z podziałem na wiek', fontweight='bold', fontsize=16)
-    axes[1].set_ylabel('Liczba oddanych głosów')
+    axes[1].set_ylabel('Procent głosów w podgrupie [%]')
     axes[1].set_xlabel('')
     axes[1].legend(title='Wiek', loc='upper left')
+    axes[1].tick_params(axis='x', rotation=0)
+    axes[1].set_ylim(0, 100)
 
     # 4.3 Wybór a Doświadczenie w grach
-    sns.countplot(data=wszystkie_glosy, x='Wybór Modelu', hue='Doświadczenie', ax=axes[2], palette='Set3',
-                  order=kolejnosc_modeli, hue_order=obecne_doswiadczenia)
-    axes[2].set_title('Preferencje wyboru modelu z podziałem na doświadczenie w grach wideo', fontweight='bold', fontsize=16)
-    axes[2].set_ylabel('Liczba oddanych głosów')
+    cross_dosw = pd.crosstab(wszystkie_glosy['Wybór Modelu'], wszystkie_glosy['Doświadczenie'],
+                             normalize='columns') * 100
+    cross_dosw = cross_dosw.reindex(index=kolejnosc_modeli, columns=obecne_doswiadczenia).fillna(0)
+    cross_dosw.plot(kind='bar', ax=axes[2], color=sns.color_palette('Set3'), width=0.8)
+    axes[2].set_title('Preferencje wyboru modelu z podziałem na doświadczenie w grach wideo', fontweight='bold',
+                      fontsize=16)
+    axes[2].set_ylabel('Procent głosów w podgrupie [%]')
     axes[2].set_xlabel('Model terenu')
     axes[2].legend(title='Doświadczenie', loc='upper left')
+    axes[2].tick_params(axis='x', rotation=0)
+    axes[2].set_ylim(0, 100)
 
     for ax in axes:
         ax.grid(axis='y', linestyle='--', alpha=0.7)
