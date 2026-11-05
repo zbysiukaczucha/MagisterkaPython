@@ -224,39 +224,45 @@ def analizuj_ankiete(sciezka_excel):
 
     df_wybory_utwory.dropna(inplace=True)
 
-    plt.figure(figsize=(10, 6))
-    ax_utwory = sns.countplot(
-        data=df_wybory_utwory,
-        x='Utwór',
-        hue='Wybór Modelu',
-        palette='viridis',
-        hue_order=kolejnosc_modeli
-    )
+    # Tworzymy tabelę przestawną z normalizacją wierszową (index) i mnożymy przez 100
+    kolejnosc_utworow = ['Utwór 1 (Ambient)', 'Utwór 2 (Rock)', 'Utwór 3 (Trap)']
+    cross_utwory = pd.crosstab(df_wybory_utwory['Utwór'], df_wybory_utwory['Wybór Modelu'], normalize='index') * 100
+    cross_utwory = cross_utwory.reindex(index=kolejnosc_utworow, columns=kolejnosc_modeli).fillna(0)
 
-    plt.title('Preferencje wyboru modelu terenu w zależności od utworu muzycznego', fontweight='bold', fontsize=14)
-    plt.ylabel('Liczba oddanych głosów', fontsize=14)
-    plt.xlabel('Zastosowana próbka dźwiękowa', fontsize=14, labelpad=10)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
-    plt.legend(title='Wybór modelu', loc='upper left')
+    # Generowanie wykresu słupkowego za pomocą wbudowanej metody z pandas
+    ax_utwory = cross_utwory.plot(kind='bar', figsize=(10, 6),
+                                  color=sns.color_palette('viridis', len(kolejnosc_modeli)), width=0.7)
 
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    ax_utwory.set_title('Preferencje wyboru modelu terenu w zależności od utworu muzycznego', fontweight='bold',
+                        fontsize=14)
+    ax_utwory.set_ylabel('Procent oddanych głosów [%]', fontsize=14)
+    ax_utwory.set_xlabel('Zastosowana próbka dźwiękowa', fontsize=14, labelpad=10)
 
+    ax_utwory.tick_params(axis='x', rotation=0, labelsize=12)
+    ax_utwory.tick_params(axis='y', labelsize=12)
+    ax_utwory.set_ylim(0, 100)
+    ax_utwory.legend(title='Wybór modelu', loc='upper left')
+
+    ax_utwory.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Dodawanie procentowych adnotacji na szczytach słupków
     for p in ax_utwory.patches:
         height = p.get_height()
         if height > 0:
             ax_utwory.annotate(
-                f'{int(height)}',
+                f'{height:.1f}%',
                 (p.get_x() + p.get_width() / 2., height),
                 ha='center',
                 va='bottom',
-                fontweight='bold'
+                fontweight='bold',
+                xytext=(0, 3),
+                textcoords='offset points'
             )
 
     plt.tight_layout()
     plt.savefig('Ankieta_05_Wybory_Utwory.png', dpi=300)
     plt.close()
-    print("Wygenerowano wykres 05: Preferencje wyboru modelu w zależności od utworu")
+    print("Wygenerowano wykres 05: Preferencje wyboru modelu w zależności od utworu (procentowy)")
 
 
 if __name__ == "__main__":
